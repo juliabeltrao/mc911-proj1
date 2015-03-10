@@ -43,6 +43,8 @@
 
 structure:	header BEGIN_DOCUMENT body END_DOCUMENT
 		 |	BEGIN_DOCUMENT body END_DOCUMENT
+		 |	header BEGIN_DOCUMENT body END_DOCUMENT WHITESPACE
+		 |	BEGIN_DOCUMENT body END_DOCUMENT WHITESPACE
 ;
 
 docclass:	DOCUMENTCLASS '[' text ']' '{' text '}' {printf("docclass\n");}
@@ -75,6 +77,7 @@ txtit:		TEXTIT '{' text '}' {printf("txtit\n");}
 ;
 
 itemz:		BEGIN_ITEM items END_ITEM {printf("itemz\n");}
+		 |	BEGIN_ITEM WHITESPACE items END_ITEM {printf("itemz\n");}
 ;
 
 incgraph:	INCLUDEGRAPHICS '{' text '}' {printf("incgraph\n");}
@@ -84,6 +87,7 @@ cte:		CITE '{' text '}' {printf("cte\n");}
 ;
 
 bblgphy:	BEGIN_BIBL bibitm END_BIBL {printf("bblgphy\n");}
+		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {printf("bblgphy\n");}
 ;
 
 items:		items ITEM text {printf("items\n");}
@@ -92,8 +96,8 @@ items:		items ITEM text {printf("items\n");}
 		 |	ITEM '[' text ']' text {printf("items\n");}
 ;
 
-bibitm:		bibitm BIBITEM text {printf("bibitm\n");}
-		 |	BIBITEM text {printf("bibitm\n");}
+bibitm:		bibitm BIBITEM '{' text '}' text {printf("bibitm\n");}
+		 |	BIBITEM '{' text '}' text {printf("bibitm\n");}
 ;
 
 text:	 	text STRING {printf("text\n");}
