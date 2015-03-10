@@ -20,36 +20,49 @@
 %token MAKETITLE
 %token TEXTBF
 %token TEXTIT
-%token BGN
+%token BEGIN_DOCUMENT
+%token BEGIN_ITEM
+%token BEGIN_BIBL
 %token ITEM
 %token INCLUDEGRAPHICS
 %token CITE
 %token BIBITEM
-%token END
+%token END_DOCUMENT
+%token END_ITEM
+%token END_BIBL
+%token <str> WHITESPACE
 %token <str> STRING
 
 %type <str> text
 
 %start structure
 
+%error-verbose
+
 %%
 
-structure:	header BGN '{' text '}' body END '{' text '}' 
-		 |	BGN '{' text '}' body END '{' text '}'
+structure:	header BEGIN_DOCUMENT body END_DOCUMENT
+		 |	BEGIN_DOCUMENT body END_DOCUMENT
 ;
 
 docclass:	DOCUMENTCLASS '[' text ']' '{' text '}' {printf("docclass\n");}
 		 |	DOCUMENTCLASS '{' text '}' {printf("docclass\n");}
+		 |	DOCUMENTCLASS '[' text ']' '{' text '}' WHITESPACE {printf("docclass\n");}
+		 |	DOCUMENTCLASS '{' text '}' WHITESPACE {printf("docclass\n");}
 ;
 
 usepack:	USEPACKAGE '[' text ']' '{' text '}' {printf("usepack\n");}
 		 |	USEPACKAGE '{' text '}' {printf("usepack\n");}
+		 |	USEPACKAGE '[' text ']' '{' text '}' WHITESPACE {printf("usepack\n");}
+		 |	USEPACKAGE '{' text '}' WHITESPACE {printf("usepack\n");}
 ;
 
 ttle:		TITLE '{' text '}' {printf("ttle\n");}
+		 |	TITLE '{' text '}' WHITESPACE {printf("ttle\n");}
 ;
 
 authr:		AUTHOR '{' text '}' {printf("authr\n");}
+		 |  AUTHOR '{' text '}' WHITESPACE {printf("authr\n");}
 ;
 
 mkttle:		MAKETITLE	{printf("mkttle\n");}
@@ -61,7 +74,7 @@ txtbf:		TEXTBF '{' text '}' {printf("txtbf\n");}
 txtit:		TEXTIT '{' text '}' {printf("txtit\n");}
 ;
 
-itemz:		BGN '{' text '}' items END '{' text '}' {printf("itemz\n");}
+itemz:		BEGIN_ITEM items END_ITEM {printf("itemz\n");}
 ;
 
 incgraph:	INCLUDEGRAPHICS '{' text '}' {printf("incgraph\n");}
@@ -70,7 +83,7 @@ incgraph:	INCLUDEGRAPHICS '{' text '}' {printf("incgraph\n");}
 cte:		CITE '{' text '}' {printf("cte\n");}
 ;
 
-bblgphy:	BGN '{' text '}' bibitm END '{' text '}' {printf("bblgphy\n");}
+bblgphy:	BEGIN_BIBL bibitm END_BIBL {printf("bblgphy\n");}
 ;
 
 items:		items ITEM text {printf("items\n");}
@@ -83,8 +96,10 @@ bibitm:		bibitm BIBITEM text {printf("bibitm\n");}
 		 |	BIBITEM text {printf("bibitm\n");}
 ;
 
-text:		text STRING {printf("text\n");}
+text:	 	text STRING {printf("text\n");}
+		 |	text WHITESPACE {printf("text\n");}
 		 |	STRING {printf("text\n");}
+		 |	WHITESPACE {printf("text\n");}
 ;
 
 math:	 	'$' text '$'
