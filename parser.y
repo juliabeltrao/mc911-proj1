@@ -7,8 +7,7 @@
 	char *str;
 }
 
-%token ' '
-%token '\\'
+
 %token '['
 %token ']'
 %token '{'
@@ -22,9 +21,6 @@
 %token TEXTBF
 %token TEXTIT
 %token BGN
-%token DOCUMENT
-%token ITEMIZE
-%token THEBIBLIOGRAPHY
 %token ITEM
 %token INCLUDEGRAPHICS
 %token CITE
@@ -38,55 +34,60 @@
 
 %%
 
-structure:	header '\\' BGN '{' DOCUMENT '}' body '\\' END '{' DOCUMENT '}' 
-		 |	'\\' BGN '{' DOCUMENT '}' body '\\' END '{' DOCUMENT '}'
+structure:	header BGN '{' text '}' body END '{' text '}' 
+		 |	BGN '{' text '}' body END '{' text '}'
 ;
 
-docclass:	'\\' DOCUMENTCLASS '[' text ']' '{' STRING '}' {printf("docclass\n");}
-		 |	'\\' DOCUMENTCLASS '{' STRING '}' {printf("docclass\n");}
+docclass:	DOCUMENTCLASS '[' text ']' '{' text '}' {printf("docclass\n");}
+		 |	DOCUMENTCLASS '{' text '}' {printf("docclass\n");}
 ;
 
-usepack:	'\\' USEPACKAGE '[' text ']' '{' STRING '}' {printf("usepack\n");}
-		 |	'\\' USEPACKAGE '{' STRING '}' {printf("usepack\n");}
+usepack:	USEPACKAGE '[' text ']' '{' text '}' {printf("usepack\n");}
+		 |	USEPACKAGE '{' text '}' {printf("usepack\n");}
 ;
 
-ttle:		'\\' TITLE '{' text '}' {printf("ttle\n");}
+ttle:		TITLE '{' text '}' {printf("ttle\n");}
 ;
 
-authr:		'\\' AUTHOR '{' text '}' {printf("authr\n");}
+authr:		AUTHOR '{' text '}' {printf("authr\n");}
 ;
 
-mkttle:		'\\' MAKETITLE	{printf("mkttle\n");}
+mkttle:		MAKETITLE	{printf("mkttle\n");}
 ;
 
-txtbf:		'\\' TEXTBF '{' text '}' {printf("txtbf\n");}
+txtbf:		TEXTBF '{' text '}' {printf("txtbf\n");}
 ;
 
-txtit:		'\\' TEXTIT '{' text '}' {printf("txtit\n");}
+txtit:		TEXTIT '{' text '}' {printf("txtit\n");}
 ;
 
-itemz:		'\\' BGN '{' ITEMIZE '}' items '\\' END '{' ITEMIZE '}' {printf("itemz\n");}
+itemz:		BGN '{' text '}' items END '{' text '}' {printf("itemz\n");}
 ;
 
-incgraph:	'\\' INCLUDEGRAPHICS '{' STRING '}' {printf("incgraph\n");}
+incgraph:	INCLUDEGRAPHICS '{' text '}' {printf("incgraph\n");}
 ;
 
-cte:		'\\' CITE '{' STRING '}' {printf("cte\n");}
+cte:		CITE '{' text '}' {printf("cte\n");}
 ;
 
-bblgphy:	'\\' BGN '{' THEBIBLIOGRAPHY '}' bibitm '\\' END '{' THEBIBLIOGRAPHY '}' {printf("bblgphy\n");}
+bblgphy:	BGN '{' text '}' bibitm END '{' text '}' {printf("bblgphy\n");}
 ;
 
-items:		items '\\' ITEM text {printf("items\n");}
-		 |	'\\' ITEM text {printf("items\n");}
+items:		items ITEM text {printf("items\n");}
+		 |	items ITEM '[' text ']' text {printf("items\n");}
+		 |	ITEM text {printf("items\n");}
+		 |	ITEM '[' text ']' text {printf("items\n");}
 ;
 
-bibitm:		bibitm '\\' BIBITEM STRING {printf("bibitm\n");}
-		 |	'\\' BIBITEM STRING {printf("bibitm\n");}
+bibitm:		bibitm BIBITEM text {printf("bibitm\n");}
+		 |	BIBITEM text {printf("bibitm\n");}
 ;
 
-text:		text ' ' STRING {printf("text\n");}
+text:		text STRING {printf("text\n");}
 		 |	STRING {printf("text\n");}
+;
+
+math:	 	'$' text '$'
 ;
 
 header:		header docclass {printf("header step\n");}
@@ -106,7 +107,8 @@ body:		body mkttle {printf("body\n");}
 		 |	body incgraph {printf("body\n");}
 		 |	body cte {printf("body\n");}
 		 |	body bblgphy {printf("body\n");}
-		 | 	body text {printf("body\n");}
+		 |	body text {printf("body\n");}
+		 |	body math {printf("body\n");}
 		 |	mkttle {printf("body\n");}
 		 |	txtbf {printf("body\n");}
 		 |	txtit {printf("body\n");}
@@ -115,6 +117,7 @@ body:		body mkttle {printf("body\n");}
 		 |	cte {printf("body\n");}
 		 |	bblgphy {printf("body\n");}
 		 |	text {printf("body\n");}
+		 |	math {printf("body\n");}
 ;
 
 %%
