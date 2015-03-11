@@ -135,7 +135,7 @@ text:	 	STRING {printf("text\n");}
 
 item_list:	/*item_list items {printf("item_list\n");}
 		 |	item_list WHITESPACE items {printf("item_list\n");}
-		 |	items {printf("item_list\n");}*/
+		 |	items {printf("item_list\n");} */
 		 items
 ;		
 
