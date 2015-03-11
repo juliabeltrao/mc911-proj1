@@ -34,6 +34,7 @@
 %token <str> STRING
 
 %type <str> text
+%type <str> text_list
 
 %start structure
 
@@ -41,102 +42,110 @@
 
 %%
 
-structure:	header BEGIN_DOCUMENT body END_DOCUMENT
-		 |	BEGIN_DOCUMENT body END_DOCUMENT
-		 |	header BEGIN_DOCUMENT body END_DOCUMENT WHITESPACE
-		 |	BEGIN_DOCUMENT body END_DOCUMENT WHITESPACE
+/* visao top level do arquivo LaTex */
+structure:	header_list BEGIN_DOCUMENT body_list END_DOCUMENT
+		 |	BEGIN_DOCUMENT body_list END_DOCUMENT
+		 |	header_list BEGIN_DOCUMENT body_list END_DOCUMENT WHITESPACE
+		 |	BEGIN_DOCUMENT body_list END_DOCUMENT WHITESPACE
 ;
 
-docclass:	DOCUMENTCLASS '[' text ']' '{' text '}' {printf("docclass\n");}
-		 |	DOCUMENTCLASS '{' text '}' {printf("docclass\n");}
-		 |	DOCUMENTCLASS '[' text ']' '{' text '}' WHITESPACE {printf("docclass\n");}
-		 |	DOCUMENTCLASS '{' text '}' WHITESPACE {printf("docclass\n");}
+/* gera a lista de itens do cabecalho */
+header_list:
+			header_list header {printf("header_list\n");}
+		|	header_list WHITESPACE {printf("header_list\n");}
+		|	header {printf("header_list\n");}
 ;
 
-usepack:	USEPACKAGE '[' text ']' '{' text '}' {printf("usepack\n");}
-		 |	USEPACKAGE '{' text '}' {printf("usepack\n");}
-		 |	USEPACKAGE '[' text ']' '{' text '}' WHITESPACE {printf("usepack\n");}
-		 |	USEPACKAGE '{' text '}' WHITESPACE {printf("usepack\n");}
-;
-
-ttle:		TITLE '{' text '}' {printf("ttle\n");}
-		 |	TITLE '{' text '}' WHITESPACE {printf("ttle\n");}
-;
-
-authr:		AUTHOR '{' text '}' {printf("authr\n");}
-		 |  AUTHOR '{' text '}' WHITESPACE {printf("authr\n");}
-;
-
-mkttle:		MAKETITLE	{printf("mkttle\n");}
-;
-
-txtbf:		TEXTBF '{' text '}' {printf("txtbf\n");}
-;
-
-txtit:		TEXTIT '{' text '}' {printf("txtit\n");}
-;
-
-itemz:		BEGIN_ITEM items END_ITEM {printf("itemz\n");}
-		 |	BEGIN_ITEM WHITESPACE items END_ITEM {printf("itemz\n");}
-;
-
-incgraph:	INCLUDEGRAPHICS '{' text '}' {printf("incgraph\n");}
-;
-
-cte:		CITE '{' text '}' {printf("cte\n");}
-;
-
-bblgphy:	BEGIN_BIBL bibitm END_BIBL {printf("bblgphy\n");}
-		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {printf("bblgphy\n");}
-;
-
-items:		items ITEM text {printf("items\n");}
-		 |	items ITEM '[' text ']' text {printf("items\n");}
-		 |	ITEM text {printf("items\n");}
-		 |	ITEM '[' text ']' text {printf("items\n");}
-;
-
-bibitm:		bibitm BIBITEM '{' text '}' text {printf("bibitm\n");}
-		 |	BIBITEM '{' text '}' text {printf("bibitm\n");}
-;
-
-text:	 	text STRING {printf("text\n");}
-		 |	text WHITESPACE {printf("text\n");}
-		 |	STRING {printf("text\n");}
-		 |	WHITESPACE {printf("text\n");}
-;
-
-math:	 	'$' text '$'
-;
-
-header:		header docclass {printf("header step\n");}
-		 |	header usepack {printf("header step\n");}
-		 |	header ttle {printf("header step\n");}
-		 |	header authr {printf("header step\n");}
-		 | 	docclass {printf("header\n");}
+/* possiveis itens do cabecalho */
+header:		docclass {printf("header\n");}
 		 |	usepack {printf("header\n");}
 		 |	ttle {printf("header\n");}
 		 |	authr {printf("header\n");}
 ;
 
-body:		body mkttle {printf("body\n");}
-		 |	body txtbf {printf("body\n");}
-		 |	body txtit {printf("body\n");}
-		 |	body itemz {printf("body\n");}
-		 |	body incgraph {printf("body\n");}
-		 |	body cte {printf("body\n");}
-		 |	body bblgphy {printf("body\n");}
-		 |	body text {printf("body\n");}
-		 |	body math {printf("body\n");}
-		 |	mkttle {printf("body\n");}
+/* gera a lista de itens do corpo do documento*/
+body_list:	body_list body {printf("body\n");}
+		 |	body {printf("body\n");}
+;
+
+/* possiveis itens do corpo do documento */
+body:		mkttle {printf("body\n");}
 		 |	txtbf {printf("body\n");}
 		 |	txtit {printf("body\n");}
 		 |	itemz {printf("body\n");}
 		 |	incgraph {printf("body\n");}
 		 |	cte {printf("body\n");}
 		 |	bblgphy {printf("body\n");}
-		 |	text {printf("body\n");}
+		 |	text_list {printf("body\n");}
 		 |	math {printf("body\n");}
+;
+
+/* descricao dos itens do cabecalho */
+docclass:	DOCUMENTCLASS '[' text_list ']' '{' text_list '}' {printf("docclass\n");}
+		 |	DOCUMENTCLASS '{' text_list '}' {printf("docclass\n");}
+;
+
+usepack:	USEPACKAGE '[' text_list ']' '{' text_list '}' {printf("usepack\n");}
+		 |	USEPACKAGE '{' text_list '}' {printf("usepack\n");}
+;
+
+ttle:		TITLE '{' text_list '}' {printf("ttle\n");}
+;
+
+authr:		AUTHOR '{' text_list '}' {printf("authr\n");}
+;
+/* fim da descricao dos itens do cabecalho */
+
+/* descricao dos itens do corpo do documento */
+mkttle:		MAKETITLE	{printf("mkttle\n");}
+;
+
+txtbf:		TEXTBF '{' text_list '}' {printf("txtbf\n");}
+;
+
+txtit:		TEXTIT '{' text_list '}' {printf("txtit\n");}
+;
+
+itemz:		BEGIN_ITEM item_list END_ITEM {printf("itemz\n");}
+		 |	BEGIN_ITEM WHITESPACE item_list END_ITEM {printf("itemz\n");}
+;
+
+incgraph:	INCLUDEGRAPHICS '{' text_list '}' {printf("incgraph\n");}
+;
+
+cte:		CITE '{' text_list '}' {printf("cte\n");}
+;
+
+bblgphy:	BEGIN_BIBL bibitm END_BIBL {printf("bblgphy\n");}
+		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {printf("bblgphy\n");}
+;
+
+text_list: 	/*text_list text {printf("text_list\n");}
+		 |	text {printf("text_list\n");}*/
+		 text
+;
+
+math:	 	'$' text_list '$'
+;
+/* fim da descricao dos itens do corpo do documento */
+
+text:	 	STRING {printf("text\n");}
+		 |	WHITESPACE {printf("text\n");}
+;
+
+item_list:	/*item_list items {printf("item_list\n");}
+		 |	item_list WHITESPACE items {printf("item_list\n");}
+		 |	items {printf("item_list\n");}*/
+		 items
+;		
+
+items:		ITEM text_list {printf("items\n");}
+		 |	ITEM '[' text_list ']' text_list {printf("items\n");}
+		 |	itemz {printf("items\n");}
+;
+
+bibitm:		bibitm BIBITEM '{' text_list '}' text_list {printf("bibitm\n");}
+		 |	BIBITEM '{' text_list '}' text_list {printf("bibitm\n");}
 ;
 
 %%
