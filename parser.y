@@ -1,6 +1,13 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+
+char *title = NULL:
+
+char *concat(int count, ...);
+
 %}
 
 %union{
@@ -64,8 +71,8 @@ header:		docclass {printf("header\n");}
 ;
 
 /* gera a lista de itens do corpo do documento*/
-body_list:	body_list body {printf("body\n");}
-		 |	body {printf("body\n");}
+body_list:	body_list body {printf("body_list\n");}
+		 |	body {printf("body_list\n");}
 ;
 
 /* possiveis itens do corpo do documento */
@@ -76,7 +83,7 @@ body:		mkttle {printf("body\n");}
 		 |	incgraph {printf("body\n");}
 		 |	cte {printf("body\n");}
 		 |	bblgphy {printf("body\n");}
-		 |	text_list {printf("body\n");}
+		 |	text_list {printf("body %s\n", $1);}
 		 |	math {printf("body\n");}
 ;
 
@@ -89,7 +96,7 @@ usepack:	USEPACKAGE '[' text_list ']' '{' text_list '}' {printf("usepack\n");}
 		 |	USEPACKAGE '{' text_list '}' {printf("usepack\n");}
 ;
 
-ttle:		TITLE '{' text_list '}' {printf("ttle\n");}
+ttle:		TITLE '{' text_list '}' {title = (char*)strdup($3);}
 ;
 
 authr:		AUTHOR '{' text_list '}' {printf("authr\n");}
@@ -97,50 +104,48 @@ authr:		AUTHOR '{' text_list '}' {printf("authr\n");}
 /* fim da descricao dos itens do cabecalho */
 
 /* descricao dos itens do corpo do documento */
-mkttle:		MAKETITLE	{printf("mkttle\n");}
+mkttle:		MAKETITLE	{printf("mkttle %s\n", title);}
 ;
 
-txtbf:		TEXTBF '{' text_list '}' {printf("txtbf\n");}
+txtbf:		TEXTBF '{' text_list '}' {printf("txtbf %s\n", $3);}
 ;
 
-txtit:		TEXTIT '{' text_list '}' {printf("txtit\n");}
+txtit:		TEXTIT '{' text_list '}' {printf("txtit %s\n", $3);}
 ;
 
 itemz:		BEGIN_ITEM item_list END_ITEM {printf("itemz\n");}
 		 |	BEGIN_ITEM WHITESPACE item_list END_ITEM {printf("itemz\n");}
 ;
 
-incgraph:	INCLUDEGRAPHICS '{' text_list '}' {printf("incgraph\n");}
+incgraph:	INCLUDEGRAPHICS '{' text_list '}' {printf("incgraph %s\n", $3);}
 ;
 
-cte:		CITE '{' text_list '}' {printf("cte\n");}
+cte:		CITE '{' text_list '}' {printf("cte %s\n", $3);}
 ;
 
 bblgphy:	BEGIN_BIBL bibitm END_BIBL {printf("bblgphy\n");}
 		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {printf("bblgphy\n");}
 ;
 
-text_list: 	/*text_list text {printf("text_list\n");}
-		 |	text {printf("text_list\n");}*/
-		 text
+text_list: 	text_list text {$$ = concat(2,$$, $2); }
+		 |	text {$$ = $1;}
 ;
 
-math:	 	'$' text_list '$'
+math:	 	'$' text_list '$' {printf("math %s", $2);}
 ;
 /* fim da descricao dos itens do corpo do documento */
 
-text:	 	STRING {printf("text\n");}
-		 |	WHITESPACE {printf("text\n");}
+text:	 	STRING {$$ = $1;}
+		 |	WHITESPACE {$$ = $1;}
 ;
 
-item_list:	/*item_list items {printf("item_list\n");}
-		 |	item_list WHITESPACE items {printf("item_list\n");}
-		 |	items {printf("item_list\n");} */
-		 items
+item_list:	item_list items {printf("item_list\n");}
+		 |	items {printf("item_list\n");} 
 ;		
 
 items:		ITEM text_list {printf("items\n");}
 		 |	ITEM '[' text_list ']' text_list {printf("items\n");}
+		 |	WHITESPACE {printf("items\n");}
 		 |	itemz {printf("items\n");}
 ;
 
@@ -149,6 +154,31 @@ bibitm:		bibitm BIBITEM '{' text_list '}' text_list {printf("bibitm\n");}
 ;
 
 %%
+
+char* concat(int count, ...){
+
+    va_list ap;
+    int len = 1, i;
+
+    va_start(ap, count);
+    for(i=0 ; i<count ; i++)
+        len += strlen(va_arg(ap, char*));
+    va_end(ap);
+
+    char *result = (char*) calloc(sizeof(char),len);
+    int pos = 0;
+
+    // Actually concatenate strings
+    va_start(ap, count);
+    for(i=0 ; i<count ; i++)    {
+        char *s = va_arg(ap, char*);
+        strcpy(result+pos, s);
+        pos += strlen(s);
+    }
+    va_end(ap);
+
+    return result;
+}
 
 int yyerror(const char* errmsg){
 

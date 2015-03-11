@@ -11,6 +11,8 @@
 "{"							{printf("%s\n", yytext);return '{';}
 "}"							{printf("%s\n", yytext);return '}';}
 "$"							{printf("%s\n", yytext);return '$';}
+"\\$"						{printf("%s\n", yytext);yylval.str = "$";
+							 return STRING;}
 
 "\\documentclass"			{printf("%s\n", yytext);return DOCUMENTCLASS;}
 "\\usepackage"				{printf("%s\n", yytext);return USEPACKAGE;}
@@ -29,6 +31,8 @@
 "\\end{document}"			{printf("%s\n", yytext);return END_DOCUMENT;}
 "\\end{itemize}"			{printf("%s\n", yytext);return END_ITEM;}
 "\\end{thebibliography}"	{printf("%s\n", yytext);return END_BIBL;}
+"\\Omega"					{printf("%s\n", yytext);yylval.str = (char*)strdup(yytext);
+							 return STRING;}
 
 [ \r\t\n]+					{printf("%s\n", yytext); yylval.str = (char*)strdup(yytext);
 						 	 return WHITESPACE;}
