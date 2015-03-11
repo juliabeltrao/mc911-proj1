@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include "intermediate.h"
 
 char *title = NULL;
 
@@ -58,80 +59,80 @@ structure:	header_list BEGIN_DOCUMENT body_list END_DOCUMENT
 
 /* gera a lista de itens do cabecalho */
 header_list:
-			header_list header {printf("header_list\n");}
-		|	header_list WHITESPACE {printf("header_list\n");}
-		|	header {printf("header_list\n");}
+			header_list header
+		|	header_list WHITESPACE
+		|	header
 ;
 
 /* possiveis itens do cabecalho */
-header:		docclass {printf("header\n");}
-		 |	usepack {printf("header\n");}
-		 |	ttle {printf("header\n");}
-		 |	authr {printf("header\n");}
+header:		docclass
+		 |	usepack
+		 |	ttle
+		 |	authr
 ;
 
 /* gera a lista de itens do corpo do documento */
-body_list:	body_list body {printf("body_list\n");}
-		 |	body {printf("body_list\n");}
+body_list:	body_list body {}
+		 |	body {}
 ;
 
 /* possiveis itens do corpo do documento */
-body:		mkttle {printf("body\n");}
-		 |	txtbf {printf("body\n");}
-		 |	txtit {printf("body\n");}
-		 |	itemz {printf("body\n");}
-		 |	incgraph {printf("body\n");}
-		 |	cte {printf("body\n");}
-		 |	bblgphy {printf("body\n");}
-		 |	text_list {printf("body ||%s\n||", $1);}
-		 |	math {printf("body\n");}
+body:		mkttle {}
+		 |	txtbf {}
+		 |	txtit {}
+		 |	itemz {}
+		 |	incgraph {}
+		 |	cte {}
+		 |	bblgphy {}
+		 |	text_list {}
+		 |	math {}
 ;
 
 /* descricao dos itens do cabecalho */
-docclass:	DOCUMENTCLASS '[' text_list ']' '{' text_list '}' {printf("docclass\n");}
-		 |	DOCUMENTCLASS '{' text_list '}' {printf("docclass\n");}
+docclass:	DOCUMENTCLASS '[' text_list ']' '{' text_list '}' {}
+		 |	DOCUMENTCLASS '{' text_list '}' {}
 ;
 
-usepack:	USEPACKAGE '[' text_list ']' '{' text_list '}' {printf("usepack\n");}
-		 |	USEPACKAGE '{' text_list '}' {printf("usepack\n");}
+usepack:	USEPACKAGE '[' text_list ']' '{' text_list '}' {}
+		 |	USEPACKAGE '{' text_list '}' {}
 ;
 
 ttle:		TITLE '{' text_list '}' {title = (char*)strdup($3);}
 ;
 
-authr:		AUTHOR '{' text_list '}' {printf("authr\n");}
+authr:		AUTHOR '{' text_list '}' {}
 ;
 /* fim da descricao dos itens do cabecalho */
 
 /* descricao dos itens do corpo do documento */
-mkttle:		MAKETITLE	{printf("mkttle %s\n", title);}
+mkttle:		MAKETITLE	{}
 ;
 
-txtbf:		TEXTBF '{' text_list '}' {printf("txtbf %s\n", $3);}
+txtbf:		TEXTBF '{' text_list '}' {}
 ;
 
-txtit:		TEXTIT '{' text_list '}' {printf("txtit %s\n", $3);}
+txtit:		TEXTIT '{' text_list '}' {}
 ;
 
-itemz:		BEGIN_ITEM item_list END_ITEM {printf("itemz\n");}
-		 |	BEGIN_ITEM WHITESPACE item_list END_ITEM {printf("itemz\n");}
+itemz:		BEGIN_ITEM item_list END_ITEM {}
+		 |	BEGIN_ITEM WHITESPACE item_list END_ITEM {}
 ;
 
-incgraph:	INCLUDEGRAPHICS '{' text_list '}' {printf("incgraph %s\n", $3);}
+incgraph:	INCLUDEGRAPHICS '{' text_list '}' {}
 ;
 
-cte:		CITE '{' text_list '}' {printf("cte %s\n", $3);}
+cte:		CITE '{' text_list '}' {}
 ;
 
-bblgphy:	BEGIN_BIBL bibitm END_BIBL {printf("bblgphy\n");}
-		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {printf("bblgphy\n");}
+bblgphy:	BEGIN_BIBL bibitm END_BIBL {}
+		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {}
 ;
 
 text_list: 	text_list text {$$ = concat(2,$$, $2);}
 		 |	text {$$ = $1;}
 ;
 
-math:	 	'$' text_list '$' {printf("math %s", $2);}
+math:	 	'$' text_list '$' {}
 ;
 /* fim da descricao dos itens do corpo do documento */
 
@@ -139,17 +140,17 @@ text:	 	STRING {$$ = $1;}
 		 |	WHITESPACE {$$ = $1;}
 ;
 
-item_list:	item_list items {printf("item_list\n");}
-		 |	items {printf("item_list\n");} 
+item_list:	item_list items {}
+		 |	items {} 
 ;		
 
-items:		ITEM text_list {printf("items\n");}
-		 |	ITEM '[' text_list ']' text_list {printf("items\n");}
-		 |	itemz {printf("items\n");}
+items:		ITEM text_list {}
+		 |	ITEM '[' text_list ']' text_list {}
+		 |	itemz {}
 ;
 
-bibitm:		bibitm BIBITEM '{' text_list '}' text_list {printf("bibitm\n");}
-		 |	BIBITEM '{' text_list '}' text_list {printf("bibitm\n");}
+bibitm:		bibitm BIBITEM '{' text_list '}' text_list {}
+		 |	BIBITEM '{' text_list '}' text_list {}
 ;
 
 %%
@@ -188,6 +189,13 @@ int yyerror(const char* errmsg){
 
 
 int main(){
+	
+	ir_tree->id = nothing;
+	ir_tree->content = NULL;
+	ir_tree->children = NULL;
+	ir_tree->tail = NULL;
+	ir_tree->father = NULL
+	node = &ir_tree;
 	
 	yyparse();
 
