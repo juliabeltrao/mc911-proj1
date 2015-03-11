@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-char *title = NULL:
+char *title = NULL;
 
 char *concat(int count, ...);
 
@@ -70,7 +70,7 @@ header:		docclass {printf("header\n");}
 		 |	authr {printf("header\n");}
 ;
 
-/* gera a lista de itens do corpo do documento*/
+/* gera a lista de itens do corpo do documento */
 body_list:	body_list body {printf("body_list\n");}
 		 |	body {printf("body_list\n");}
 ;
@@ -83,7 +83,7 @@ body:		mkttle {printf("body\n");}
 		 |	incgraph {printf("body\n");}
 		 |	cte {printf("body\n");}
 		 |	bblgphy {printf("body\n");}
-		 |	text_list {printf("body %s\n", $1);}
+		 |	text_list {printf("body ||%s\n||", $1);}
 		 |	math {printf("body\n");}
 ;
 
@@ -127,7 +127,7 @@ bblgphy:	BEGIN_BIBL bibitm END_BIBL {printf("bblgphy\n");}
 		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {printf("bblgphy\n");}
 ;
 
-text_list: 	text_list text {$$ = concat(2,$$, $2); }
+text_list: 	text_list text {$$ = concat(2,$$, $2);}
 		 |	text {$$ = $1;}
 ;
 
@@ -145,7 +145,6 @@ item_list:	item_list items {printf("item_list\n");}
 
 items:		ITEM text_list {printf("items\n");}
 		 |	ITEM '[' text_list ']' text_list {printf("items\n");}
-		 |	WHITESPACE {printf("items\n");}
 		 |	itemz {printf("items\n");}
 ;
 
