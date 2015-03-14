@@ -1,5 +1,7 @@
 %{
 #include "parser.h"
+
+int i, size;
 %}
 
 %option noyywrap
@@ -34,11 +36,15 @@
 "\\Omega"					{yylval.str = (char*)strdup(yytext);
 							 return STRING;}
 
-[ \r\t\n]+					{ yylval.str = (char*)strdup(yytext);
+[ \r\t\n]+					{yylval.str = (char*)strdup(yytext);size = strlen(yytext);
+							 for(i = 0; i <size; i++){
+							 	if(yytext[i] == '\n')
+							 		yylineno++;
+							 }
 						 	 return WHITESPACE;}
-[a-zA-Z0-9+\-*/.,:()]+		{yylval.str = (char*)strdup(yytext);
+[a-zA-Z0-9+\-*/.,:()]+		{yylval.str = (char*)strdup(yytext); 
 				 	 	 	 return STRING;}
 
-.							{printf("erro: leitura do caracter %c na entrada\n", yytext[0]);}
+.							{printf("Erro:%d: leitura do caracter %c na entrada\n", yylineno, yytext[0]);}
 
 %%
