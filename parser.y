@@ -245,7 +245,7 @@ void destroy_ref(){
 
 	i = refs;
 	while(i != NULL){
-		aux = i;
+		aux = i; 
 		i = i->next;
 		free(aux->label);
 		free(aux);
