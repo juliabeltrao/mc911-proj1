@@ -1,7 +1,9 @@
 %{
 #include "parser.h"
 
-int i, size;
+int i, j, size, count = 0;
+
+char *s = NULL;
 %}
 
 %option noyywrap
@@ -36,11 +38,27 @@ int i, size;
 "\\Omega"					{yylval.str = (char*)strdup(yytext);
 							 return STRING;}
 
-[ \r\t\n]+					{yylval.str = (char*)strdup(yytext);size = strlen(yytext);
+[ \r\t\n]+					{size = strlen(yytext);
+							 count = 0;
 							 for(i = 0; i <size; i++){
 							 	if(yytext[i] == '\n')
-							 		yylineno++;
+							 		count++;
 							 }
+							 yylineno += count;
+							 s = (char*)malloc((size+(3*count))*sizeof(char));
+							 for(i = 0, j = 0; i < size; i++, j++){
+							 	if(yytext[i] == '\n'){
+									s[j++] = '<';
+									s[j++] = 'b';
+									s[j++] = 'r';
+									s[j] = '>';
+									i++;
+								}
+								else{
+									s[j] = yytext[i];
+								}
+							 }
+							 yylval.str = s;
 						 	 return WHITESPACE;}
 [a-zA-Z0-9+\-*/.,:()]+		{yylval.str = (char*)strdup(yytext); 
 				 	 	 	 return STRING;}
