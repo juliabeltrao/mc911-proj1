@@ -46,9 +46,9 @@ char *s = NULL;
 							 }
 							 printf("line%d:", yylineno);
 							 yylineno += count;
-							 s = (char*)malloc((size+(2*count)+1)*sizeof(char));
+							 s = (char*)malloc((size+(16*count)+1)*sizeof(char));
 							 printf("%s|| %d/%d\n", yytext, strlen(yytext), count);
-							 for(i = 0, j = 0; i < size+(2*count)+1; i++, j++){
+							 for(i = 0, j = 0; i < size+(16*count)+1; i++, j++){
 							 	printf("(i:%d, i+1:%d)\n", yytext[i], yytext[i+2]);
 							 	if(yytext[i] == '\0')
 							 		break;
@@ -56,14 +56,34 @@ char *s = NULL;
 									s[j++] = '<';
 									s[j++] = 'b';
 									s[j++] = 'r';
-									s[j] = '>';
+									s[j++] = '>';
+									s[j++] = '&';
+									s[j++] = 'n';
+									s[j++] = 'b';
+									s[j++] = 's';
+									s[j++] = 'p';
+									s[j++] = '&';
+									s[j++] = 'n';
+									s[j++] = 'b';
+									s[j++] = 's';
+									s[j++] = 'p';
+									s[j++] = '&';
+									s[j++] = 'n';
+									s[j++] = 'b';
+									s[j++] = 's';
+									s[j++] = 'p';
+									s[j++] = '&';
+									s[j++] = 'n';
+									s[j++] = 'b';
+									s[j++] = 's';
+									s[j] = 'p';
 									i += 3;
 								}
 								else{
 									s[j] = yytext[i];
 								}
 							 }
-							 s[i] = '\0';
+							 s[j] = '\0';
 							 yylval.str = s;
 						 	 return WHITESPACE;}
 

@@ -150,8 +150,8 @@ incgraph:	INCLUDEGRAPHICS '{' text_list '}' {$$ = (char*)concat(3, "<img src=", 
 cte:		CITE '{' text_list '}' {$$ = (char*)concat(3, "\\cite{", $3, "}");}
 ;
 
-bblgphy:	BEGIN_BIBL bibitm END_BIBL {$$ = (char*)concat(3, "<table>", $2, "</table>");}
-		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {$$ = (char*)concat(4, "<table>", $2, $3, "</table>");}
+bblgphy:	BEGIN_BIBL bibitm END_BIBL {$$ = (char*)concat(4, "<br><br><b>Referências</b><br><br>", "<table>", $2, "</table>");}
+		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {$$ = (char*)concat(5, "<br><br><b>Referencias</b><br><br>", "<table>", $2, $3, "</table>");}
 ;
 
 text_list: 	text_list text {$$ = (char*)concat(2,$$, $2);}
