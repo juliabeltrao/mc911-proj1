@@ -44,12 +44,9 @@ char *s = NULL;
 							 	if(yytext[i] == '\n')
 							 		count++;
 							 }
-							 printf("line%d:", yylineno);
 							 yylineno += count;
 							 s = (char*)malloc((size+(16*count)+1)*sizeof(char));
-							 printf("%s|| %d/%d\n", yytext, strlen(yytext), count);
 							 for(i = 0, j = 0; i < size+(16*count)+1; i++, j++){
-							 	printf("(i:%d, i+1:%d)\n", yytext[i], yytext[i+2]);
 							 	if(yytext[i] == '\0')
 							 		break;
 								if(yytext[i] == 13 && yytext[i+2] == 13){

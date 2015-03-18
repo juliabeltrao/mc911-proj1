@@ -77,10 +77,10 @@ void finalize();
 %%
 
 /* visao top level do arquivo LaTex */
-structure:	header_list BEGIN_DOCUMENT body_list END_DOCUMENT {doc = (char*)concat(3, "<body>", $3, ",</body>");}
-		 |	BEGIN_DOCUMENT body_list END_DOCUMENT {doc = (char*)concat(3, "<body>", $2, "</body>");}
-		 |	header_list BEGIN_DOCUMENT body_list END_DOCUMENT WHITESPACE {doc = (char*)concat(3, "<body>", $3, "</body>");}
-		 |	BEGIN_DOCUMENT body_list END_DOCUMENT WHITESPACE {doc = (char*)concat(3, "<body>", $2, "</body>");}
+structure:	header_list BEGIN_DOCUMENT body_list END_DOCUMENT {doc = (char*)concat(3, "<body>\n", $3, ",</body>");}
+		 |	BEGIN_DOCUMENT body_list END_DOCUMENT {doc = (char*)concat(3, "<body>\n", $2, "</body>");}
+		 |	header_list BEGIN_DOCUMENT body_list END_DOCUMENT WHITESPACE {doc = (char*)concat(3, "<body>\n", $3, "</body>");}
+		 |	BEGIN_DOCUMENT body_list END_DOCUMENT WHITESPACE {doc = (char*)concat(3, "<body>\n", $2, "</body>");}
 ;
 
 /* gera a lista de itens do cabecalho */
@@ -131,27 +131,31 @@ authr:		AUTHOR '{' text_list '}' {}
 /* fim da descricao dos itens do cabecalho */
 
 /* descricao dos itens do corpo do documento */
-mkttle:		MAKETITLE	{$$ = (char*)concat(3, "<h1 align=\"center\">", title, "</h1>" );}
+mkttle:		MAKETITLE	{$$ = (char*)concat(3, "\n<h1 align=\"center\">", title, "</h1>\n" );}
 ;
 
-txtbf:		TEXTBF '{' text_list '}' {$$ = (char*)concat(3, "<b>", $3, "</b>");}
+txtbf:		TEXTBF '{' text_list '}' {$$ = (char*)concat(3, "\n<b>", $3, "</b>\n");}
 ;
 
-txtit:		TEXTIT '{' text_list '}' {$$ = (char*)concat(3, "<i>", $3, "</i>");}
+txtit:		TEXTIT '{' text_list '}' {$$ = (char*)concat(3, "\n<i>", $3, "</i>\n");}
 ;
 
-itemz:		BEGIN_ITEM item_list END_ITEM {$$ = (char*)concat(3, "<table><ul>", $2, "</ul></table>");}
+/*itemz:		BEGIN_ITEM item_list END_ITEM {$$ = (char*)concat(3, "<table><ul>", $2, "</ul></table>");}
 		 |	BEGIN_ITEM WHITESPACE item_list END_ITEM {$$ = (char*)concat(4, "<table><ul>", $2, $3, "</ul></table>");}
+;*/
+
+itemz:		BEGIN_ITEM item_list END_ITEM {$$ = (char*)concat(3, "\n<ul>", $2, "</ul>");}
+		 |	BEGIN_ITEM WHITESPACE item_list END_ITEM {$$ = (char*)concat(4, "\n<ul>", $2, $3, "</ul>");}
 ;
 
-incgraph:	INCLUDEGRAPHICS '{' text_list '}' {$$ = (char*)concat(3, "<img src=", $3, ">");}
+incgraph:	INCLUDEGRAPHICS '{' text_list '}' {$$ = (char*)concat(3, "<img src=", $3, ">\n");}
 ;
 
 cte:		CITE '{' text_list '}' {$$ = (char*)concat(3, "\\cite{", $3, "}");}
 ;
 
-bblgphy:	BEGIN_BIBL bibitm END_BIBL {$$ = (char*)concat(4, "<br><br><b>Referências</b><br><br>", "<table>", $2, "</table>");}
-		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {$$ = (char*)concat(5, "<br><br><b>Referencias</b><br><br>", "<table>", $2, $3, "</table>");}
+bblgphy:	BEGIN_BIBL bibitm END_BIBL {$$ = (char*)concat(4, "<br><br><b>Referências</b><br><br>\n", "\n<table>", $2, "</table>\n");}
+		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {$$ = (char*)concat(5, "<br><br><b>Referencias</b><br><br>\n", "\n<table>", $2, $3, "</table>\n");}
 ;
 
 text_list: 	text_list text {$$ = (char*)concat(2,$$, $2);}
@@ -170,13 +174,19 @@ item_list:	item_list items {$$ = (char*)concat(2, $$, $2);}
 		 |	items {$$ = $1;} 
 ;		
 
+/*
 items:		ITEM text_list {$$ = (char*)concat(3, "<li>", $2, "</li>");}
 		 |	ITEM '[' text_list ']' text_list {$$ = (char*)concat(5, "<tr><td>", $3, "</td><td> ", $5, "</td></tr>");}
-		 |	itemz WHITESPACE {$$ = (char*)concat(4, "<li>", $1, $2, "</li>");}
+		 |	itemz WHITESPACE {$$ = (char*)concat(4, "<li><ul>", $1, $2, "</ul></li>");}
+;*/
+
+items:		ITEM text_list {$$ = (char*)concat(3, "<li>", $2, "</li>\n");}
+		 |	ITEM '[' text_list ']' text_list {$$ = (char*)concat(5, "<li>[", $3, "] ", $5, "</li>\n");}
+		 |	itemz WHITESPACE {$$ = (char*)concat(2, $1, $2);}
 ;
 
-bibitm:		bibitm BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", ref_num); $$ = (char*)concat(6, $$, "<tr><td>[", buf, "]</td><td>", $6, "</td></tr>"); add_ref($4);}
-		 |	BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", ref_num); $$ = (char*)concat(4, "<tr><td>[", buf, "]</td><td>", $5, "</td></tr>"); add_ref($3);}
+bibitm:		bibitm BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", ref_num); $$ = (char*)concat(6, $$, "<tr><td>[", buf, "]</td><td>", $6, "</td></tr>\n"); add_ref($4);}
+		 |	BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", ref_num); $$ = (char*)concat(4, "<tr><td>[", buf, "]</td><td>", $5, "</td></tr>\n"); add_ref($3);}
 ;
 
 %%
@@ -318,17 +328,11 @@ int main(int argc, char *argv[]){
 	while(!feof(yyin))
 		yyparse();
 
-
-	for(i = refs; i != NULL; i = i->next){
-		printf("[%d]%s\n", i->num, i->label);
-	}
-
-	fprintf(output, "<!DOCTYPE html> <html> <head> <title>%s</title> <script type=\"text/x-mathjax-config\"> MathJax.Hub.Config({tex2jax: {inlineMath: [[\'$$\',\'$$\'], [\'\\\\(\',\'\\\\)\']]}}); </script> <script type=\"text/javascript\" src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"> </script> </head>\n", outname);
+	fprintf(output, "<!DOCTYPE html>\n\t<html>\n\t\t<head>\n\t\t\t<title>%s</title>\n\t\t\t<script type=\"text/x-mathjax-config\">\n\t\t\t\tMathJax.Hub.Config({tex2jax: {inlineMath: [[\'$$\',\'$$\'], [\'\\\\(\',\'\\\\)\']]}});\n\t\t\t</script>\n\t\t\t<script type=\"text/javascript\" src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\">\n\t\t\t</script>\n\t\t\t<style>td {\n\t\t\t\tvertical-align: text-top;\n\t\t\t}</style>\n\t\t </head>\n", outname);
 
 	finalize();	
 
 	fprintf(output, "\n</html>\n");
-	printf("DOCUMENT:\n%s\n", doc);
 
 	destroy_ref();
 
