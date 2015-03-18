@@ -15,6 +15,8 @@ typedef struct reference_s{
 extern FILE *yyin;
 extern int yylineno;
 
+FILE *output = NULL;
+
 char *title = NULL;
 
 char *doc = NULL;
@@ -30,6 +32,8 @@ char *concat(int count, ...);
 void add_ref(char *s);
 
 int get_ref(char *s);
+
+void finalize();
 
 %}
 
@@ -143,7 +147,7 @@ itemz:		BEGIN_ITEM item_list END_ITEM {$$ = (char*)concat(3, "<table><ul>", $2, 
 incgraph:	INCLUDEGRAPHICS '{' text_list '}' {$$ = (char*)concat(3, "<img src=", $3, ">");}
 ;
 
-cte:		CITE '{' text_list '}' {sprintf(buf, "%d", get_ref($3)); $$ = (char*)concat(3, "[", buf, "]");}
+cte:		CITE '{' text_list '}' {$$ = (char*)concat(3, "\\cite{", $3, "}");}
 ;
 
 bblgphy:	BEGIN_BIBL bibitm END_BIBL {$$ = (char*)concat(3, "<table>", $2, "</table>");}
@@ -171,8 +175,8 @@ items:		ITEM text_list {$$ = (char*)concat(3, "<li>", $2, "</li>");}
 		 |	itemz WHITESPACE {$$ = (char*)concat(4, "<li>", $1, $2, "</li>");}
 ;
 
-bibitm:		bibitm BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", get_ref($4)); $$ = (char*)concat(6, $$, "<tr><td>[", buf, "]</td><td>", $6, "</td></tr>"); add_ref($4);}
-		 |	BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", get_ref($3)); $$ = (char*)concat(4, "<tr><td>[", buf, "]</td><td>", $5, "</td></tr>"); add_ref($3);}
+bibitm:		bibitm BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", ref_num); $$ = (char*)concat(6, $$, "<tr><td>[", buf, "]</td><td>", $6, "</td></tr>"); add_ref($4);}
+		 |	BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", ref_num); $$ = (char*)concat(4, "<tr><td>[", buf, "]</td><td>", $5, "</td></tr>"); add_ref($3);}
 ;
 
 %%
@@ -252,11 +256,32 @@ void destroy_ref(){
 	}
 }
 
+void finalize(){
+	
+	char *find = NULL;
+	char buf[50];
+	int i;
+
+	find = strstr(doc, "\\cite{");
+	while(find != NULL){
+		find[0] = '\0';
+		fprintf(output, "%s", doc);
+		find += 6;
+		for(i = 0; find[i] != '}'; i++){
+			buf[i] = find[i];
+		}
+		buf[i] = '\0';
+		fprintf(output, "[%d]", get_ref(buf));
+		doc = find + i + 1;
+		find = strstr(doc, "\\cite{");
+	}
+	fprintf(output, "%s", doc);
+}
+
 
 int main(int argc, char *argv[]){
 	
 	FILE *input = NULL;
-	FILE *output = NULL;
 	char *outname = NULL;
 	reference_t *i;
 
@@ -281,16 +306,6 @@ int main(int argc, char *argv[]){
 		exit(0);
 	}
 
-
-	yyin = input;
-
-	while(!feof(yyin))
-		yyparse();
-
-	for(i = refs; i != NULL; i = i->next){
-		printf("[%d]%s\n", i->num, i->label);
-	}
-
 	output = fopen(outname, "w");
 
 	if(output == NULL){
@@ -298,9 +313,19 @@ int main(int argc, char *argv[]){
 		exit(0);
 	}
 
-	fprintf(output, "<!DOCTYPE html> <html> <head> <title>%s</title> <script type=\"text/x-mathjax-config\"> MathJax.Hub.Config({tex2jax: {inlineMath: [[\'$$\',\'$$\'], [\'\\\\(\',\'\\\\)\']]}}); </script> <script type=\"text/javascript\" src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"> </script> </head>\n", outname);	
+	yyin = input;
 
-	fprintf(output, "%s", doc);
+	while(!feof(yyin))
+		yyparse();
+
+
+	for(i = refs; i != NULL; i = i->next){
+		printf("[%d]%s\n", i->num, i->label);
+	}
+
+	fprintf(output, "<!DOCTYPE html> <html> <head> <title>%s</title> <script type=\"text/x-mathjax-config\"> MathJax.Hub.Config({tex2jax: {inlineMath: [[\'$$\',\'$$\'], [\'\\\\(\',\'\\\\)\']]}}); </script> <script type=\"text/javascript\" src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"> </script> </head>\n", outname);
+
+	finalize();	
 
 	fprintf(output, "\n</html>\n");
 	printf("DOCUMENT:\n%s\n", doc);
