@@ -76,7 +76,7 @@ void finalize();
 
 %%
 
-/* visao top level do arquivo LaTex */
+/* visao top level do arquivo LaTex -- a tag <body> e inserida no arquivo */
 structure:	header_list BEGIN_DOCUMENT body_list END_DOCUMENT {doc = (char*)concat(3, "<body>\n", $3, ",</body>");}
 		 |	BEGIN_DOCUMENT body_list END_DOCUMENT {doc = (char*)concat(3, "<body>\n", $2, "</body>");}
 		 |	header_list BEGIN_DOCUMENT body_list END_DOCUMENT WHITESPACE {doc = (char*)concat(3, "<body>\n", $3, "</body>");}
@@ -115,76 +115,83 @@ body:		mkttle {$$ = $1;}
 ;
 
 /* descricao dos itens do cabecalho */
+/* o comando \documentclass e reconhecido, porem ignorado */
 docclass:	DOCUMENTCLASS '[' text_list ']' '{' text_list '}' {}
 		 |	DOCUMENTCLASS '{' text_list '}' {}
 ;
 
+/* o comando \usepackage e reconhecido, porem ignorado */
 usepack:	USEPACKAGE '[' text_list ']' '{' text_list '}' {}
 		 |	USEPACKAGE '{' text_list '}' {}
 ;
 
+/* o comando \title e reconhecido e o titulo armazenado */
 ttle:		TITLE '{' text_list '}' {title = (char*)strdup($3);}
 ;
 
+/* o comando \author e reconhecido, porem ignorado */
 authr:		AUTHOR '{' text_list '}' {}
 ;
 /* fim da descricao dos itens do cabecalho */
 
 /* descricao dos itens do corpo do documento */
+/* neste ponto o titulo instanciado pelo comando \title e adicionado ao arquivo html */
 mkttle:		MAKETITLE	{$$ = (char*)concat(3, "\n<h1 align=\"center\">", title, "</h1>\n" );}
 ;
 
+/* textos sao colocados em negrito aqui*/
 txtbf:		TEXTBF '{' text_list '}' {$$ = (char*)concat(3, "\n<b>", $3, "</b>\n");}
 ;
 
+/* textos sao colocados em italico aqui*/
 txtit:		TEXTIT '{' text_list '}' {$$ = (char*)concat(3, "\n<i>", $3, "</i>\n");}
 ;
 
-/*itemz:		BEGIN_ITEM item_list END_ITEM {$$ = (char*)concat(3, "<table><ul>", $2, "</ul></table>");}
-		 |	BEGIN_ITEM WHITESPACE item_list END_ITEM {$$ = (char*)concat(4, "<table><ul>", $2, $3, "</ul></table>");}
-;*/
-
+/* adiciona as tags <ul> para delimitar a lista */
 itemz:		BEGIN_ITEM item_list END_ITEM {$$ = (char*)concat(3, "\n<ul>", $2, "</ul>");}
 		 |	BEGIN_ITEM WHITESPACE item_list END_ITEM {$$ = (char*)concat(4, "\n<ul>", $2, $3, "</ul>");}
 ;
 
+/* adiciona imagens ao arquivo html */
 incgraph:	INCLUDEGRAPHICS '{' text_list '}' {$$ = (char*)concat(3, "<img src=", $3, ">\n");}
 ;
 
+/* reconhece o comando \cite -- o comando e tratado posteriormente na funcao finalize */
 cte:		CITE '{' text_list '}' {$$ = (char*)concat(3, "\\cite{", $3, "}");}
 ;
 
+/* adiciona a bibliografia ao arquivo html */
 bblgphy:	BEGIN_BIBL bibitm END_BIBL {$$ = (char*)concat(4, "<br><br><b>Referências</b><br><br>\n", "\n<table>", $2, "</table>\n");}
 		 |	BEGIN_BIBL WHITESPACE bibitm END_BIBL {$$ = (char*)concat(5, "<br><br><b>Referencias</b><br><br>\n", "\n<table>", $2, $3, "</table>\n");}
 ;
 
+/* concatena strings para formar uma lista de strings */
 text_list: 	text_list text {$$ = (char*)concat(2,$$, $2);}
 		 |	text {$$ = $1;}
 ;
 
+/* reconhece strings no modo matemático e as delimita por \\( e \\) para que sejam reconhecidas pela biblioteca MathJax do JavaScript */
 math:	 	'$' text_list '$' {$$ = (char*)concat(3, "\\(", $2, "\\)");}
 ;
 /* fim da descricao dos itens do corpo do documento */
 
+/* reconhece elementos de um texto: strings e whitespaces */
 text:	 	STRING {$$ = $1;}
 		 |	WHITESPACE {$$ = $1;}
 ;
 
+/* reconhece uma lista de itens */
 item_list:	item_list items {$$ = (char*)concat(2, $$, $2);}
 		 |	items {$$ = $1;} 
 ;		
 
-/*
-items:		ITEM text_list {$$ = (char*)concat(3, "<li>", $2, "</li>");}
-		 |	ITEM '[' text_list ']' text_list {$$ = (char*)concat(5, "<tr><td>", $3, "</td><td> ", $5, "</td></tr>");}
-		 |	itemz WHITESPACE {$$ = (char*)concat(4, "<li><ul>", $1, $2, "</ul></li>");}
-;*/
-
+/* reconhece itens de uma lista e adiciona a tag <li> a eles */ 
 items:		ITEM text_list {$$ = (char*)concat(3, "<li>", $2, "</li>\n");}
 		 |	ITEM '[' text_list ']' text_list {$$ = (char*)concat(5, "<li>[", $3, "] ", $5, "</li>\n");}
 		 |	itemz WHITESPACE {$$ = (char*)concat(2, $1, $2);}
 ;
 
+/* reconece a bibliografia e a adiciona em formato de tabela no arquivo html  */
 bibitm:		bibitm BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", ref_num); $$ = (char*)concat(6, $$, "<tr><td>[", buf, "]</td><td>", $6, "</td></tr>\n"); add_ref($4);}
 		 |	BIBITEM '{' text_list '}' text_list {sprintf(buf, "%d", ref_num); $$ = (char*)concat(4, "<tr><td>[", buf, "]</td><td>", $5, "</td></tr>\n"); add_ref($3);}
 ;
@@ -223,6 +230,7 @@ int yyerror(const char* errmsg){
 	return 0;
 }
 
+/* cria um elemento na lista ligada de referencias e armazana seu numero, atualiza a variavel global */
 void add_ref(char *s){
 
 	reference_t *aux;
@@ -241,6 +249,7 @@ void add_ref(char *s){
 	ref_num++;
 }
 
+/* consulta a lista ligada de referencias */
 int get_ref(char *s){
 
 	reference_t *i;
@@ -253,6 +262,7 @@ int get_ref(char *s){
 	return -1;
 }
 
+/* destroi a lista ligada de referencias */
 void destroy_ref(){
 
 	reference_t *i, *aux;
@@ -266,6 +276,7 @@ void destroy_ref(){
 	}
 }
 
+/* esta funcao resolve os comandos do tipo \cite */
 void finalize(){
 	
 	char *find = NULL;
